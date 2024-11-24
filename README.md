@@ -1,66 +1,208 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Weather API with Caching & Task Scheduling
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project demonstrates a Laravel API for fetching weather data with caching and task scheduling using Redis.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+-   Weather data fetching via an external API.
+-   Caching the weather data using Redis for faster response.
+-   Task scheduling to automatically clear cache at regular intervals.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Before setting up the project, make sure you have the following:
 
-## Learning Laravel
+-   PHP = 8.2
+-   Composer
+-   Laravel = 10.0
+-   Redis server installed and running
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Setup Instructions
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 1. Clone the Repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+First, clone the project to your local machine:
 
-## Laravel Sponsors
+````bash
+git clone https://github.com/alphacloud-tech/task-scheduler-caching.git
+cd task-scheduler-caching
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
 
-### Premium Partners
+### 2. Install Dependencies
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+Install the required Composer packages:
 
-## Contributing
+```bash
+composer install
+````
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Set Up .env Configuration
 
-## Code of Conduct
+Copy the `.env.example` to `.env`:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+### 4. Configure Redis
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#### Install Redis on Your Local Machine
+
+Follow the instructions below to install Redis based on your operating system.
+
+**For Ubuntu/Debian:**
+
+```bash
+sudo apt-get update
+sudo apt-get install redis-server
+```
+
+**For Windows:**
+
+-   Download Redis for Windows from [Redis for Windows](https://sourceforge.net/projects/redis-for-windows.mirror/files).
+-   Follow the instructions provided to install Redis.
+
+#### Start Redis
+
+Run the following command to check Redis:
+
+```bash
+redis-server --version
+```
+
+This will return Redis version`.
+
+```bash
+sc query redis
+```
+
+If you installed Redis as a service on Windows, you can check its status.
+
+```bash
+redis-cli ping PONG
+```
+
+This will return "PONG" If Redis is running.
+
+#### Update .env Configuration
+
+In your `.env` file, ensure the following settings for Redis:
+
+```dotenv
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+QUEUE_CONNECTION=redis
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+```
+
+### 5. Set Up Cache Configuration
+
+In the `config/cache.php` file, ensure the following settings for Redis:
+
+```php
+'default' => env('CACHE_DRIVER', 'file'),
+
+'stores' => [
+   'redis' => [
+        'driver' => 'redis',
+        'connection' => 'cache',
+        'lock_connection' => 'default',
+    ],
+],
+```
+
+### 6. Run Database Migrations
+
+Run the following command to migrate your database:
+
+```bash
+php artisan migrate
+```
+
+### 7. Task Scheduling
+
+To set up task scheduling to clear the cache periodically, open the `app/Console/Kernel.php` file and add the following code in the `schedule()` method:
+
+```php
+protected function schedule(Schedule $schedule): void
+{
+    // Schedule the task to clear weather data cache every two minutes
+    $schedule->call(function () {
+        Cache::forget('weather_data');
+    })->everyTwoMinutes();
+}
+```
+
+To run the task scheduler, use the following command:
+
+```bash
+php artisan schedule:run
+```
+
+You can also set up a cron job to run this command every minute:
+
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### 8. Weather Data Fetching & Caching
+
+#### Caching Weather Data Using Redis
+
+In the `WeatherService` class (or wherever you're fetching weather data), modify the method for caching the response from the external weather API. Here’s an example of caching the weather data:
+
+```php
+public function getWeatherData(): array
+{
+    return Cache::remember('weather_data', 60, function () {
+        $response = Http::get(env('WEATHER_API_URL'), [
+            'key' => env('WEATHER_API_KEY'),
+            'q' => 'Lagos',
+        ]);
+
+        if ($response->failed()) {
+            return ['error' => 'Failed to fetch data'];
+        }
+
+        return $response->json();
+    });
+}
+```
+
+This caches the weather data for 60 minutes, using Redis to store the data.
+
+### 9. Use the Weather API
+
+Once everything is set up, you can call the weather API endpoint to retrieve cached weather data:
+
+```bash
+GET /api/weather
+```
+
+If the weather data is available in the cache, it will be returned from there. Otherwise, it will be fetched from the external weather API and cached.
+
+### 10. Clear Cache
+
+You can manually clear the cache by running the following command:
+
+```bash
+php artisan cache:clear
+```
+
+Alternatively, the task scheduler will automatically clear the cache every two minutes (as set in the `Kernel.php`).
+
+---
+
+## Additional Resources
+
+-   [Laravel Documentation - Redis](https://laravel.com/docs/8.x/redis)
+-   [Redis Documentation](https://redis.io/documentation)
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open source and available under the [MIT License](LICENSE).
