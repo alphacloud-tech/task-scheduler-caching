@@ -148,33 +148,8 @@ You can also set up a cron job to run this command every minute:
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-### 8. Weather Data Fetching & Caching
 
-#### Caching Weather Data Using Redis
-
-In the `WeatherService` class (or wherever you're fetching weather data), modify the method for caching the response from the external weather API. Here’s an example of caching the weather data:
-
-```php
-public function getWeatherData(): array
-{
-    return Cache::remember('weather_data', 60, function () {
-        $response = Http::get(env('WEATHER_API_URL'), [
-            'key' => env('WEATHER_API_KEY'),
-            'q' => 'Lagos',
-        ]);
-
-        if ($response->failed()) {
-            return ['error' => 'Failed to fetch data'];
-        }
-
-        return $response->json();
-    });
-}
-```
-
-This caches the weather data for 60 minutes, using Redis to store the data.
-
-### 9. Use the Weather API
+### 8. Use the Weather API
 
 Once everything is set up, you can call the weather API endpoint to retrieve cached weather data:
 
@@ -184,7 +159,7 @@ GET /api/weather
 
 If the weather data is available in the cache, it will be returned from there. Otherwise, it will be fetched from the external weather API and cached.
 
-### 10. Clear Cache
+### 9. Clear Cache
 
 You can manually clear the cache by running the following command:
 
@@ -203,6 +178,3 @@ Alternatively, the task scheduler will automatically clear the cache every two m
 
 ---
 
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
