@@ -96,6 +96,10 @@ QUEUE_CONNECTION=redis
 REDIS_HOST=127.0.0.1
 REDIS_PASSWORD=null
 REDIS_PORT=6379
+
+
+WEATHER_API_KEY=
+WEATHER_API_URL=https://api.weatherapi.com/v1/current.json
 ```
 
 ### 5. Set Up Cache Configuration
