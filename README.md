@@ -12,9 +12,9 @@ This project demonstrates a Laravel API for fetching weather data with caching a
 
 Before setting up the project, make sure you have the following:
 
--   PHP = 8.2
+-   PHP >= 8.2
 -   Composer
--   Laravel = 10.0
+-   Laravel >= 10.0
 -   Redis server installed and running
 
 ## Setup Instructions
